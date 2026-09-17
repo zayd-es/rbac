@@ -12,7 +12,6 @@ const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
 
 async function main() {
-  // Create Teams (St3mel prisma, machi db)
   const engineering = await prisma.team.create({
     data: {
       name: "Engineering",

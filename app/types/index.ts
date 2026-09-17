@@ -1,35 +1,31 @@
-export enum Role{
-    ADMIN="ADMIN",
-    MANAGER="MANAGER",
-    USER="USER",
-    GUEST="GUEST" 
-}   
-export interface User{
-    id:string;
-    name:string;
-    email:string;
-    role:Role;
-    teamId?:string;
-    team?:Team;
-    createdAt:Date; 
-    updatedAt:Date
-}
-export interface Team{
-    id:string;
-    name:string;
-    description?:string|null;
-    code:string;
-    members:User[];
- createdAt:Date;
-    updatedAt:Date
+import { Role } from "@/app/generated/prisma"; 
 
+export { Role };
+
+export interface Team {
+  id: string;
+  name: string;
+  description?: string | null;
+  code?: string | null;
+  members?: User[];
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
-export interface AuthContextType{
-    user:User|null;
-    login   :(formData:FormData)=>void;
-    logout:()=>void;
-    hasPermission:(requiredRole:Role)
+export interface User {
+  id: string;
+  name: string | null;
+  email: string;
+  role: Role; 
+  teamId?: string | null;
+  team?: Team | null;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
 
-
+export interface AuthContextType {
+  user: User | null;
+  login: (formData: FormData) => Promise<void> | void;
+  logout: () => Promise<void> | void;
+  hasPermission: (requiredRole: Role) => boolean;
 }

@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
     if (!user) {
       return NextResponse.json(
         { error: "You are not authorized to access user informations" },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -21,61 +21,37 @@ export async function GET(request: NextRequest) {
 
     const WHERE: Prisma.UserWhereInput = {};
 
-
-
     if (user.role === Role.ADMIN) {
-    } 
-    
-    else if (user.role === Role.MANAGER) {
-     
-      WHERE.OR = [
-        { teamId: user.teamId },
-        { role: Role.USER },
-      ];
-    } 
-    
-    else {
-    
+    } else if (user.role === Role.MANAGER) {
+      WHERE.OR = [{ teamId: user.teamId }, { role: Role.USER }];
+    } else {
       WHERE.teamId = user.teamId;
       WHERE.role = {
         not: Role.ADMIN,
       };
     }
 
- 
-
     if (teamId) {
-
-      if (
-        user.role === Role.USER &&
-        teamId !== user.teamId
-      ) {
+      if (user.role === Role.USER && teamId !== user.teamId) {
         return NextResponse.json(
           { error: "You cannot access another team" },
-          { status: 403 }
+          { status: 403 },
         );
       }
 
       WHERE.teamId = teamId;
     }
 
-
     if (role) {
-
-      if (
-        user.role === Role.USER &&
-        role === Role.ADMIN
-      ) {
+      if (user.role === Role.USER && role === Role.ADMIN) {
         return NextResponse.json(
           { error: "You cannot access ADMIN users" },
-          { status: 403 }
+          { status: 403 },
         );
       }
 
       WHERE.role = role as Role;
     }
-
- 
 
     const users = await db.user.findMany({
       where: WHERE,
@@ -87,20 +63,14 @@ export async function GET(request: NextRequest) {
         role: true,
         teamId: true,
       },
-      orderBy:{createdAt:"desc"}
+      orderBy: { createdAt: "desc" },
     });
 
-  
-
-    return NextResponse.json(
-      { users },
-      { status: 200 }
-    );
-
+    return NextResponse.json({ users }, { status: 200 });
   } catch (error) {
     return NextResponse.json(
       { error: "Internal server error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

@@ -47,5 +47,4 @@ enum Role {
   ADMIN
   MANAGER
   USER
-  GUEST
 }

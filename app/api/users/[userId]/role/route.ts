@@ -5,7 +5,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function PATCH(
   request: NextRequest,
-  context: { params: Promise<{ userId: string }> }
+  context: { params: Promise<{ userId: string }> },
 ) {
   try {
     const { userId } = await context.params;
@@ -14,14 +14,14 @@ export async function PATCH(
     if (!currentUser || !checkUserPermission(currentUser.role, Role.ADMIN)) {
       return NextResponse.json(
         { error: "You are not authorized to modify roles" },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
     if (currentUser.id === userId) {
       return NextResponse.json(
         { error: "You cannot change your own role" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -30,7 +30,14 @@ export async function PATCH(
     if (!role || !Object.values(Role).includes(role as Role)) {
       return NextResponse.json(
         { error: "Please provide a valid user role" },
-        { status: 400 }
+        { status: 400 },
+      );
+    }
+
+    if (role === Role.ADMIN) {
+      return NextResponse.json(
+        { error: "Promoting users to Admin is strictly disabled" },
+        { status: 403 },
       );
     }
 
@@ -41,7 +48,14 @@ export async function PATCH(
     if (!targetUser) {
       return NextResponse.json(
         { error: "Target user not found" },
-        { status: 404 }
+        { status: 404 },
+      );
+    }
+
+    if (targetUser.role === Role.ADMIN) {
+      return NextResponse.json(
+        { error: "Primary Admin role cannot be modified" },
+        { status: 403 },
       );
     }
 
@@ -59,13 +73,13 @@ export async function PATCH(
 
     return NextResponse.json(
       { user: updatedUser, message: `User updated to ${role} successfully` },
-      { status: 200 }
+      { status: 200 },
     );
   } catch (error) {
     console.error("Role PATCH Error:", error);
     return NextResponse.json(
       { error: "Internal Server Error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

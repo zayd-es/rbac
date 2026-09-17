@@ -5,7 +5,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function PATCH(
   request: NextRequest,
-  context: { params: Promise<{ userId: string }> }
+  context: { params: Promise<{ userId: string }> },
 ) {
   try {
     const { userId } = await context.params;
@@ -14,58 +14,48 @@ export async function PATCH(
     if (!user || !checkUserPermission(user.role, Role.ADMIN)) {
       return NextResponse.json(
         { error: "You are not authorized to assign team" },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
     const { teamId } = await request.json();
 
-    if (!teamId) {
-      return NextResponse.json(
-        { error: "Please enter a valid team code" },
-        { status: 400 }
-      );
-    }
+    if (teamId) {
+      const teamExists = await db.team.findUnique({
+        where: { id: teamId },
+      });
 
-    const teamExists = await db.team.findUnique({
-      where: { id: teamId },
-    });
-
-    if (!teamExists) {
-      return NextResponse.json(
-        { error: "Team not found" },
-        { status: 404 }
-      );
+      if (!teamExists) {
+        return NextResponse.json({ error: "Team not found" }, { status: 404 });
+      }
     }
 
     const updatedUser = await db.user.update({
       where: { id: userId },
-      data: { teamId },
-        select: {
-            id: true,
-            name: true,
-            email: true,
-            role: true,
-            teamId: true,
-            team:true
-        },
+      data: {
+        teamId: teamId ? teamId : null,
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        teamId: true,
+        team: true,
+      },
     });
 
     return NextResponse.json(updatedUser, { status: 200 });
-
   } catch (error) {
-  console.error("Team assignment error:", error);
+    console.error("Team assignment error:", error);
 
-  if (error instanceof Error) {
+    if (error instanceof Error) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+
     return NextResponse.json(
-      { error: "User not found" }, 
-      { status: 404 }
+      { error: "Internal Server Error" },
+      { status: 500 },
     );
   }
-
-  return NextResponse.json(
-    { error: "Internal Server Error" },
-    { status: 500 }
-  );
-}
 }
