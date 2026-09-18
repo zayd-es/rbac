@@ -6,7 +6,6 @@ import db from "./db";
 import { cache } from "react";
 
 const JWT_SECRET = process.env.JWT_SECRET!;
-
 export const hashPassword = async (password: string): Promise<string> => {
   return bcrypt.hash(password, 12);
 };
@@ -56,7 +55,6 @@ export const getCurrentUser = cache(
 );
 
 const ROLE_HIERARCHY: Record<Role, number> = {
-  [Role.GUEST]: 0,
   [Role.USER]: 1,
   [Role.MANAGER]: 2,
   [Role.ADMIN]: 3,
