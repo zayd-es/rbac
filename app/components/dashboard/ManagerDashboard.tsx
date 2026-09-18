@@ -1,6 +1,7 @@
 "use client";
 
-import { User } from "@/app/generated/prisma";
+import { User } from "@/app/types";
+
 import { Users, UserCheck, UserMinus, Shield } from "lucide-react";
 
 export type ManagerDashboardProps = {

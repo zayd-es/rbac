@@ -73,7 +73,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     if (!user) return false;
 
     const roleHierarchy: Record<Role, number> = {
-      [Role.GUEST]: 0,
       [Role.USER]: 1,
       [Role.MANAGER]: 2,
       [Role.ADMIN]: 3,
