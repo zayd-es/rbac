@@ -1,7 +1,7 @@
 "use client";
 
 import { apiClient } from "@/app/lib/apiClient";
-import { Role, Team, User } from "@/app/types";
+import { PaginationMeta, Role, Team, User } from "@/app/types"; // 1. زدنا PaginationMeta هنا
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
 import {
@@ -38,14 +38,21 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { PaginationControls } from "./PaginationControls";
 
 export type AdminDashboardProps = {
   users: User[];
   teams: Team[];
   currentUser: User;
+  meta: PaginationMeta; // 3. زدنا meta فـ الـ Props باش يغبر الخطأ الأحـمر
 };
 
-const AdminDashboard = ({ users, teams, currentUser }: AdminDashboardProps) => {
+const AdminDashboard = ({
+  users,
+  teams,
+  currentUser,
+  meta,
+}: AdminDashboardProps) => {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
@@ -87,7 +94,7 @@ const AdminDashboard = ({ users, teams, currentUser }: AdminDashboardProps) => {
   const stats = [
     {
       label: "Total Users",
-      count: users.length,
+      count: meta.totalCount, // نقدرو نستعملو meta.totalCount هنا باش يعطينا العدد الكلي الحقيقي
       icon: Users,
       color: "text-slate-200",
     },
@@ -157,162 +164,171 @@ const AdminDashboard = ({ users, teams, currentUser }: AdminDashboardProps) => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        <Card className="lg:col-span-7 bg-slate-900/40 border-slate-800/80 backdrop-blur-md shadow-sm overflow-hidden">
-          <CardHeader className="border-b border-slate-800/80 bg-slate-950/40 px-6 py-4">
-            <CardTitle className="text-base font-semibold text-slate-100 flex items-center justify-between">
-              <span>Users</span>
-              <Badge
-                variant="secondary"
-                className="bg-slate-800/80 text-slate-200 border-slate-700/80 font-mono text-xs px-2.5 py-0.5 rounded-full"
-              >
-                {users.length}
-              </Badge>
-            </CardTitle>
-            <CardDescription className="text-xs text-slate-400">
-              Manage roles and team assignments
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="p-0">
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader className="bg-slate-950/60 border-b border-slate-800/80">
-                  <TableRow className="hover:bg-transparent border-slate-800/80">
-                    <TableHead className="text-slate-400 font-medium text-xs">
-                      User
-                    </TableHead>
-                    <TableHead className="text-slate-400 font-medium text-xs">
-                      Role
-                    </TableHead>
-                    <TableHead className="text-slate-400 font-medium text-xs">
-                      Team
-                    </TableHead>
-                    <TableHead className="text-slate-400 font-medium text-xs text-right">
-                      Actions
-                    </TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {users.map((user) => (
-                    <TableRow
-                      key={user.id}
-                      className="border-b border-slate-800/50 hover:bg-slate-800/40 transition-colors"
-                    >
-                      <TableCell className="py-3">
-                        <div className="flex items-center gap-3">
-                          <Avatar className="h-8 w-8 border border-slate-700/60">
-                            <AvatarFallback className="bg-slate-800 text-indigo-400 text-xs font-semibold">
-                              {user.name?.charAt(0).toUpperCase() ||
-                                user.email.charAt(0).toUpperCase()}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div className="min-w-0 max-w-[140px] sm:max-w-[180px]">
-                            <div className="font-medium text-slate-200 text-sm truncate">
-                              {user.name || "—"}
-                            </div>
-                            <div className="text-slate-500 text-xs truncate">
-                              {user.email}
+        <Card className="lg:col-span-7 bg-slate-900/40 border-slate-800/80 backdrop-blur-md shadow-sm overflow-hidden flex flex-col justify-between">
+          <div>
+            <CardHeader className="border-b border-slate-800/80 bg-slate-950/40 px-6 py-4">
+              <CardTitle className="text-base font-semibold text-slate-100 flex items-center justify-between">
+                <span>Users</span>
+                <Badge
+                  variant="secondary"
+                  className="bg-slate-800/80 text-slate-200 border-slate-700/80 font-mono text-xs px-2.5 py-0.5 rounded-full"
+                >
+                  {meta.totalCount}
+                </Badge>
+              </CardTitle>
+              <CardDescription className="text-xs text-slate-400">
+                Manage roles and team assignments
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="p-0">
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader className="bg-slate-950/60 border-b border-slate-800/80">
+                    <TableRow className="hover:bg-transparent border-slate-800/80">
+                      <TableHead className="text-slate-400 font-medium text-xs">
+                        User
+                      </TableHead>
+                      <TableHead className="text-slate-400 font-medium text-xs">
+                        Role
+                      </TableHead>
+                      <TableHead className="text-slate-400 font-medium text-xs">
+                        Team
+                      </TableHead>
+                      <TableHead className="text-slate-400 font-medium text-xs text-right">
+                        Actions
+                      </TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {users.map((user) => (
+                      <TableRow
+                        key={user.id}
+                        className="border-b border-slate-800/50 hover:bg-slate-800/40 transition-colors"
+                      >
+                        <TableCell className="py-3">
+                          <div className="flex items-center gap-3">
+                            <Avatar className="h-8 w-8 border border-slate-700/60">
+                              <AvatarFallback className="bg-slate-800 text-indigo-400 text-xs font-semibold">
+                                {user.name?.charAt(0).toUpperCase() ||
+                                  user.email.charAt(0).toUpperCase()}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div className="min-w-0 max-w-[140px] sm:max-w-[180px]">
+                              <div className="font-medium text-slate-200 text-sm truncate">
+                                {user.name || "—"}
+                              </div>
+                              <div className="text-slate-500 text-xs truncate">
+                                {user.email}
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      </TableCell>
+                        </TableCell>
 
-                      <TableCell className="py-3">
-                        <Select
-                          value={user.role}
-                          onValueChange={(val) =>
-                            handleRoleAssignment(user.id, val as Role)
-                          }
-                          disabled={isPending || user.role === Role.ADMIN}
-                        >
-                          <SelectTrigger className="w-[110px] h-8 text-xs bg-slate-950/60 border-slate-800/80 text-slate-200 hover:bg-slate-900 focus:ring-1 focus:ring-indigo-500/50 transition-colors">
-                            <SelectValue placeholder={user.role}>
-                              {user.role}
-                            </SelectValue>
-                          </SelectTrigger>
-                          <SelectContent className="bg-slate-900 border-slate-800 text-slate-200">
-                            {Object.values(Role)
-                              .filter(
-                                (role) =>
-                                  role !== Role.ADMIN ||
-                                  user.role === Role.ADMIN,
+                        <TableCell className="py-3">
+                          <Select
+                            value={user.role}
+                            onValueChange={(val) =>
+                              handleRoleAssignment(user.id, val as Role)
+                            }
+                            disabled={isPending || user.role === Role.ADMIN}
+                          >
+                            <SelectTrigger className="w-[110px] h-8 text-xs bg-slate-950/60 border-slate-800/80 text-slate-200 hover:bg-slate-900 focus:ring-1 focus:ring-indigo-500/50 transition-colors">
+                              <SelectValue placeholder={user.role}>
+                                {user.role}
+                              </SelectValue>
+                            </SelectTrigger>
+                            <SelectContent className="bg-slate-900 border-slate-800 text-slate-200">
+                              {Object.values(Role)
+                                .filter(
+                                  (role) =>
+                                    role !== Role.ADMIN ||
+                                    user.role === Role.ADMIN,
+                                )
+                                .map((role) => (
+                                  <SelectItem
+                                    key={role}
+                                    value={role}
+                                    className="text-xs hover:bg-slate-800 focus:bg-slate-800 focus:text-white cursor-pointer"
+                                  >
+                                    {role}
+                                  </SelectItem>
+                                ))}
+                            </SelectContent>
+                          </Select>
+                        </TableCell>
+
+                        <TableCell className="py-3">
+                          <Select
+                            value={user.teamId || "none"}
+                            onValueChange={(val) =>
+                              handleTeamAssignment(
+                                user.id,
+                                val === "none" ? null : val,
                               )
-                              .map((role) => (
+                            }
+                            disabled={isPending}
+                          >
+                            <SelectTrigger className="w-[120px] h-8 text-xs bg-slate-950/60 border-slate-800/80 text-slate-200 hover:bg-slate-900 focus:ring-1 focus:ring-indigo-500/50 transition-colors">
+                              <SelectValue
+                                placeholder={
+                                  teams.find((t) => t.id === user.teamId)
+                                    ?.name || "No Team"
+                                }
+                              >
+                                {teams.find((t) => t.id === user.teamId)
+                                  ?.name || "No Team"}
+                              </SelectValue>
+                            </SelectTrigger>
+                            <SelectContent className="bg-slate-900 border-slate-800 text-slate-200">
+                              <SelectItem
+                                value="none"
+                                className="text-xs hover:bg-slate-800 text-slate-400 focus:bg-slate-800 focus:text-slate-200 cursor-pointer"
+                              >
+                                No Team
+                              </SelectItem>
+                              {teams.map((team) => (
                                 <SelectItem
-                                  key={role}
-                                  value={role}
+                                  key={team.id}
+                                  value={team.id}
                                   className="text-xs hover:bg-slate-800 focus:bg-slate-800 focus:text-white cursor-pointer"
                                 >
-                                  {role}
+                                  {team.name}
                                 </SelectItem>
                               ))}
-                          </SelectContent>
-                        </Select>
-                      </TableCell>
+                            </SelectContent>
+                          </Select>
+                        </TableCell>
 
-                      <TableCell className="py-3">
-                        <Select
-                          value={user.teamId || "none"}
-                          onValueChange={(val) =>
-                            handleTeamAssignment(
-                              user.id,
-                              val === "none" ? null : val,
-                            )
-                          }
-                          disabled={isPending}
-                        >
-                          <SelectTrigger className="w-[120px] h-8 text-xs bg-slate-950/60 border-slate-800/80 text-slate-200 hover:bg-slate-900 focus:ring-1 focus:ring-indigo-500/50 transition-colors">
-                            <SelectValue
-                              placeholder={
-                                teams.find((t) => t.id === user.teamId)?.name ||
-                                "No Team"
+                        <TableCell className="py-3 text-right">
+                          {user.teamId && user.role !== Role.ADMIN ? (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() =>
+                                handleTeamAssignment(user.id, null)
                               }
+                              disabled={isPending}
+                              className="h-8 px-2 text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 text-xs transition-colors"
                             >
-                              {teams.find((t) => t.id === user.teamId)?.name ||
-                                "No Team"}
-                            </SelectValue>
-                          </SelectTrigger>
-                          <SelectContent className="bg-slate-900 border-slate-800 text-slate-200">
-                            <SelectItem
-                              value="none"
-                              className="text-xs hover:bg-slate-800 text-slate-400 focus:bg-slate-800 focus:text-slate-200 cursor-pointer"
-                            >
-                              No Team
-                            </SelectItem>
-                            {teams.map((team) => (
-                              <SelectItem
-                                key={team.id}
-                                value={team.id}
-                                className="text-xs hover:bg-slate-800 focus:bg-slate-800 focus:text-white cursor-pointer"
-                              >
-                                {team.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </TableCell>
+                              <UserMinus className="w-3.5 h-3.5 mr-1" />
+                              Remove
+                            </Button>
+                          ) : (
+                            <span className="text-slate-600 text-xs">—</span>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </CardContent>
+          </div>
 
-                      <TableCell className="py-3 text-right">
-                        {user.teamId && user.role !== Role.ADMIN ? (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleTeamAssignment(user.id, null)}
-                            disabled={isPending}
-                            className="h-8 px-2 text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 text-xs transition-colors"
-                          >
-                            <UserMinus className="w-3.5 h-3.5 mr-1" />
-                            Remove
-                          </Button>
-                        ) : (
-                          <span className="text-slate-600 text-xs">—</span>
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          </CardContent>
+          {/* 4. زدنا أزرار الـ Pagination لتحت فـ نهاية الـ Card */}
+          <div className="p-4 border-t border-slate-800/80">
+            <PaginationControls meta={meta} />
+          </div>
         </Card>
 
         <Card className="lg:col-span-5 bg-slate-900/40 border-slate-800/80 backdrop-blur-md shadow-sm overflow-hidden">

@@ -21,6 +21,7 @@ const ManagerPage = async () => {
             role: { not: Role.ADMIN },
           },
           include: { team: true },
+          orderBy: { createdAt: "desc" },
         })
       : [],
     db.user.findMany({

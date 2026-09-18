@@ -1,4 +1,4 @@
-import { Role } from "@/app/generated/prisma"; 
+import { Role } from "@/app/generated/prisma";
 
 export { Role };
 
@@ -16,7 +16,7 @@ export interface User {
   id: string;
   name: string | null;
   email: string;
-  role: Role; 
+  role: Role;
   teamId?: string | null;
   team?: Team | null;
   createdAt?: Date;
@@ -28,4 +28,17 @@ export interface AuthContextType {
   login: (formData: FormData) => Promise<void> | void;
   logout: () => Promise<void> | void;
   hasPermission: (requiredRole: Role) => boolean;
+}
+export interface PaginationMeta {
+  page: number;
+  limit: number;
+  totalCount: number;
+  totalPages: number;
+  hasNextPage: boolean;
+  hasPreviousPage: boolean;
+}
+
+export interface PaginatedResponse<T> {
+  data: T[];
+  meta: PaginationMeta;
 }

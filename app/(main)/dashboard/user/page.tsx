@@ -22,7 +22,9 @@ const UserPage = async () => {
               name: true,
               email: true,
               role: true,
+              createdAt: true,
             },
+            orderBy: { createdAt: "desc" },
           },
         },
       })

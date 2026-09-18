@@ -8,6 +8,7 @@ type TeamMember = {
   name: string | null;
   email: string;
   role: Role;
+  createdAt: Date;
 };
 
 type TeamData = {
@@ -32,7 +33,6 @@ export default function UserDashboard({
   currentUser,
   myTeam,
 }: UserDashboardProps) {
-  // Extracting l-team li l-user part mnnou
   const activeTeam = myTeam && myTeam.length > 0 ? myTeam[0] : null;
   const teamMembers = activeTeam?.members || [];
 
