@@ -1,13 +1,13 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
-
 class ApiClient {
-  private baseUrl: string;
-  constructor() {
-    this.baseUrl = API_BASE_URL;
+  private getBaseUrl() {
+    if (typeof window !== "undefined") return "";
+    return process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
   }
 
   async request(endpoint: string, options: RequestInit = {}) {
-    const url = `${this.baseUrl}${endpoint}`;
+    const baseUrl = this.getBaseUrl();
+    const url = `${baseUrl}${endpoint.startsWith("/") ? endpoint : `/${endpoint}`}`;
+
     const config: RequestInit = {
       headers: {
         "Content-Type": "application/json",

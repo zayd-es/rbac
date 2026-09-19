@@ -20,7 +20,8 @@ const AdminPage = async ({ searchParams }: AdminPageProps) => {
 
   const resolvedSearchParams = await searchParams;
 
-  const [{ data: users, meta }, prismaTeams] = await Promise.all([
+  // ✅ زدنا استخراج stats هنا
+  const [{ data: users, meta, stats }, prismaTeams] = await Promise.all([
     getPaginatedUsers(resolvedSearchParams),
     db.team.findMany({
       include: {
@@ -47,6 +48,7 @@ const AdminPage = async ({ searchParams }: AdminPageProps) => {
       teams={teams}
       currentUser={user}
       meta={meta}
+      stats={stats} // ✅ دوزنا stats كـ Prop هنا
     />
   );
 };

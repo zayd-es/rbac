@@ -1,7 +1,7 @@
 "use client";
 
 import { apiClient } from "@/app/lib/apiClient";
-import { PaginationMeta, Role, Team, User } from "@/app/types"; // 1. زدنا PaginationMeta هنا
+import { PaginationMeta, Role, Team, User } from "@/app/types";
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
 import {
@@ -40,11 +40,21 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { PaginationControls } from "./PaginationControls";
 
+// ✅ زدنا Type لـ DashboardStats
+export type DashboardStats = {
+  totalUsers: number;
+  totalTeams: number;
+  adminsCount: number;
+  managersCount: number;
+  unassignedCount: number;
+};
+
 export type AdminDashboardProps = {
   users: User[];
   teams: Team[];
   currentUser: User;
-  meta: PaginationMeta; // 3. زدنا meta فـ الـ Props باش يغبر الخطأ الأحـمر
+  meta: PaginationMeta;
+  stats: DashboardStats; // ✅ زدنا الـ stats هنا
 };
 
 const AdminDashboard = ({
@@ -52,6 +62,7 @@ const AdminDashboard = ({
   teams,
   currentUser,
   meta,
+  stats: dashboardStats, // ✅ استقبلنا الـ stats
 }: AdminDashboardProps) => {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -91,34 +102,35 @@ const AdminDashboard = ({
     });
   };
 
-  const stats = [
+  // ✅ كنعمروا الـ Cards من dashboardStats الجاية من الـ DB مباشرة بدال u.filter()
+  const statsList = [
     {
       label: "Total Users",
-      count: meta.totalCount, // نقدرو نستعملو meta.totalCount هنا باش يعطينا العدد الكلي الحقيقي
+      count: dashboardStats.totalUsers,
       icon: Users,
       color: "text-slate-200",
     },
     {
       label: "Total Teams",
-      count: teams.length,
+      count: dashboardStats.totalTeams,
       icon: Building2,
       color: "text-indigo-400",
     },
     {
       label: "Admins",
-      count: users.filter((u) => u.role === Role.ADMIN).length,
+      count: dashboardStats.adminsCount,
       icon: ShieldCheck,
       color: "text-rose-400",
     },
     {
       label: "Managers",
-      count: users.filter((u) => u.role === Role.MANAGER).length,
+      count: dashboardStats.managersCount,
       icon: UserCheck,
       color: "text-sky-400",
     },
     {
       label: "Unassigned",
-      count: users.filter((u) => !u.teamId).length,
+      count: dashboardStats.unassignedCount,
       icon: UserX,
       color: "text-amber-400",
     },
@@ -137,8 +149,9 @@ const AdminDashboard = ({
         </div>
       </div>
 
+      {/* 1. Stats Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 md:gap-4">
-        {stats.map((item) => {
+        {statsList.map((item) => {
           const Icon = item.icon;
           return (
             <Card
@@ -164,6 +177,7 @@ const AdminDashboard = ({
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        {/* 2. Users Table */}
         <Card className="lg:col-span-7 bg-slate-900/40 border-slate-800/80 backdrop-blur-md shadow-sm overflow-hidden flex flex-col justify-between">
           <div>
             <CardHeader className="border-b border-slate-800/80 bg-slate-950/40 px-6 py-4">
@@ -325,12 +339,12 @@ const AdminDashboard = ({
             </CardContent>
           </div>
 
-          {/* 4. زدنا أزرار الـ Pagination لتحت فـ نهاية الـ Card */}
           <div className="p-4 border-t border-slate-800/80">
             <PaginationControls meta={meta} />
           </div>
         </Card>
 
+        {/* 3. Teams Table */}
         <Card className="lg:col-span-5 bg-slate-900/40 border-slate-800/80 backdrop-blur-md shadow-sm overflow-hidden">
           <CardHeader className="border-b border-slate-800/80 bg-slate-950/40 px-6 py-4">
             <CardTitle className="text-base font-semibold text-slate-100 flex items-center justify-between">
@@ -367,6 +381,8 @@ const AdminDashboard = ({
                 </TableHeader>
                 <TableBody>
                   {teams.map((team) => {
+                    // 💡 ملاحظة: إذا كنت محتاج أعداد الأعضاء والـ Managers ديال الـ Teams يرجعوا حقيقيين ومايتأثروش بالـ Pagination،
+                    // الأفضل تجمع هاد المعطيات مع الـ query ديال teams فـ الـ Backend (مثلا Prisma include _count)
                     const teamMembers = users.filter(
                       (u) => u.teamId === team.id,
                     );

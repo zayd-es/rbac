@@ -6,10 +6,17 @@ import { transformUsers } from "../utilis";
 export async function getPaginatedUsers(searchParams: {
   page?: string;
   limit?: string;
-}): Promise<PaginatedResponse<User>> {
+}): Promise<PaginatedResponse<User> & { stats: any }> {
   const { page, limit, skip } = parsePaginationParams(searchParams);
 
-  const [prismaUsers, totalCount] = await Promise.all([
+  const [
+    prismaUsers,
+    totalCount,
+    totalTeams,
+    adminsCount,
+    managersCount,
+    unassignedCount,
+  ] = await Promise.all([
     db.user.findMany({
       skip,
       take: limit,
@@ -17,6 +24,10 @@ export async function getPaginatedUsers(searchParams: {
       orderBy: { createdAt: "desc" },
     }),
     db.user.count(),
+    db.team.count(),
+    db.user.count({ where: { role: "ADMIN" } }),
+    db.user.count({ where: { role: "MANAGER" } }),
+    db.user.count({ where: { teamId: null } }),
   ]);
 
   const data = transformUsers(prismaUsers);
@@ -24,6 +35,7 @@ export async function getPaginatedUsers(searchParams: {
   const totalPages = Math.ceil(totalCount / limit) || 1;
   const hasNextPage = page < totalPages;
   const hasPreviousPage = page > 1;
+
   return {
     data,
     meta: {
@@ -33,6 +45,13 @@ export async function getPaginatedUsers(searchParams: {
       totalPages,
       hasNextPage,
       hasPreviousPage,
+    },
+    stats: {
+      totalUsers: totalCount,
+      totalTeams,
+      adminsCount,
+      managersCount,
+      unassignedCount,
     },
   };
 }
